@@ -1,0 +1,6 @@
+{
+  "name": "SGG - Sistema de Gestión Ganadera",
+  "description": "Sistema integral de gestión ganadera para fincas en Venezuela: control de ganado, leche, levante, mastitis, reproducción, registros de raza, sanidad masiva y finanzas.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
