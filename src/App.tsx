@@ -20,6 +20,9 @@ import ReproduccionView from './components/ReproduccionView';
 import AsociacionesView from './components/AsociacionesView';
 import OtrosParametrosView from './components/OtrosParametrosView';
 import PerfilUsuarioView from './components/PerfilUsuarioView';
+import SanitarioView from './components/SanitarioView';
+import ReportesView from './components/ReportesView';
+
 import { Database } from './data';
 import { supabase, SupabaseDb } from './supabaseClient';
 import {
@@ -177,7 +180,8 @@ export default function App() {
           dbBreedsCollection,
           dbCategories,
           dbMedications,
-          dbProducts
+          dbProducts,
+          dbSanitaryPlans
         ] = await Promise.all([
           SupabaseDb.fetchCollection('animals', []),
           SupabaseDb.fetchCollection('milk_logs', []),
@@ -196,7 +200,8 @@ export default function App() {
           SupabaseDb.fetchCollection('breeds', []),
           SupabaseDb.fetchCollection('animal_categories', []),
           SupabaseDb.fetchCollection('medications', []),
-          SupabaseDb.fetchCollection('other_products', [])
+          SupabaseDb.fetchCollection('other_products', []),
+          SupabaseDb.fetchCollection('sanitary_plans', [])
         ]);
 
         if (dbAnimals && dbAnimals.length > 0) setAnimals(dbAnimals);
@@ -217,6 +222,7 @@ export default function App() {
         if (dbCategories && dbCategories.length > 0) setCategories(dbCategories);
         if (dbMedications && dbMedications.length > 0) setMedications(dbMedications);
         if (dbProducts && dbProducts.length > 0) setProducts(dbProducts);
+        if (dbSanitaryPlans && dbSanitaryPlans.length > 0) setSanitaryPlans(dbSanitaryPlans);
 
       } catch (err) {
         console.warn('Sync notice: Standard memory states active.', err);
@@ -271,6 +277,7 @@ export default function App() {
   // Advanced modules: Reproducción
   const [breedingSeasons, setBreedingSeasons] = useState<BreedingSeason[]>(() => Database.getBreedingSeasons());
   const [bullEvaluations, setBullEvaluations] = useState<BullEvaluation[]>(() => Database.getBullEvaluations());
+  const [sanitaryPlans, setSanitaryPlans] = useState<SanitaryPlan[]>([]);
   
   // Advanced modules: Criabúfalo, ASOCEBU & Ruminants
   const [buffaloProduction, setBuffaloProduction] = useState<BuffaloProduction[]>(() => Database.getBuffaloProduction());
@@ -484,6 +491,14 @@ export default function App() {
     Database.saveBreedingSeasons(updated);
     if (SupabaseDb.isEnabled()) {
       SupabaseDb.upsertRecord('breeding_seasons', newSeason).catch(err => console.error(err));
+    }
+  };
+
+  const onAddSanitaryPlan = (plan: Omit<SanitaryPlan, 'id'>) => {
+    const newPlan: SanitaryPlan = { id: 'sp_' + Date.now(), ...plan };
+    setSanitaryPlans([...sanitaryPlans, newPlan]);
+    if (SupabaseDb.isEnabled()) {
+      SupabaseDb.upsertRecord('sanitary_plans', newPlan).catch(err => console.error(err));
     }
   };
 
@@ -829,6 +844,15 @@ export default function App() {
             smallRuminantLogs={smallRuminantLogs}
             onAddBuffaloProd={onAddBuffaloProd}
             onAddSmallRuminantLog={onAddSmallRuminantLog}
+          />
+        );
+      case 'reportes':
+        return <ReportesView />;
+      case 'plan-sanitario':
+        return (
+          <SanitarioView
+            sanitaryPlans={sanitaryPlans}
+            onAddSanitaryPlan={onAddSanitaryPlan}
           />
         );
       case 'medicinas':

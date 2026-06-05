@@ -124,10 +124,18 @@ export interface MedicalTask {
   vaccineOrMedicationName: string;
 }
 
-export interface MedicalPlan {
+export interface SanitaryPlanEntry {
+  id: string;
+  month: 'ENE' | 'FEB' | 'MAR' | 'ABR' | 'MAY' | 'JUN' | 'JUL' | 'AGO' | 'SEP' | 'OCT' | 'NOV' | 'DIC';
+  vaccineOrMedicationName: string;
+  applied: boolean;
+  notes: string;
+}
+
+export interface SanitaryPlan {
   id: string;
   year: number;
-  tasks: MedicalTask[];
+  entries: SanitaryPlanEntry[];
 }
 
 export interface TreatmentLog {
