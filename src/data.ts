@@ -18,7 +18,11 @@ import {
   BuffaloProduction,
   SmallRuminantLog,
   FarmParams,
-  Transaction
+  Transaction,
+  Breed,
+  AnimalCategory,
+  Medication,
+  OtherProductService
 } from './types';
 
 // INITIAL DATA - Highly contextual to Venezuelan livestock farming (Carora, Girolando, Brahman, Murrah, etc.)
@@ -415,7 +419,6 @@ const INITIAL_BULL_EVALUATIONS: BullEvaluation[] = [
   }
 ];
 
-// NUEVOS DATOS (Razas / Asociaciones)
 const INITIAL_BUFFALO_PRODUCTION: BuffaloProduction[] = [
   { id: "bp1", date: "2026-06-03", totalBuffaloes: 12, milkingBuffaloes: 8, dailyYieldKg: 48.0, averageFat: 7.8, averageProtein: 4.1, cheeseProjectionKg: 9.6 },
   { id: "bp2", date: "2026-06-02", totalBuffaloes: 12, milkingBuffaloes: 8, dailyYieldKg: 46.5, averageFat: 7.7, averageProtein: 4.2, cheeseProjectionKg: 9.2 }
@@ -668,4 +671,6 @@ export class Database {
       console.error(e);
     }
   }
+
 }
+

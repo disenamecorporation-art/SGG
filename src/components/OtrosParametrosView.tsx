@@ -5,14 +5,19 @@
 
 import React, { useState } from 'react';
 import { Sliders, Check, HelpCircle, Save, Landmark, Thermometer, CloudRain, Fence, Database, RefreshCw, CheckCircle2, XCircle } from 'lucide-react';
-import { FarmParams } from '../types';
+import { FarmParams, Breed, AnimalCategory, Medication, OtherProductService } from '../types';
+import { SupabaseDb } from '../supabaseClient';
 
 interface OtrosParametrosProps {
   farmParams: FarmParams;
   onUpdateFarmParams: (params: FarmParams) => void;
+  onAddBreed: (breed: Omit<Breed, 'id'>) => void;
+  onAddCategory: (cat: Omit<AnimalCategory, 'id'>) => void;
+  onAddMedication: (med: Omit<Medication, 'id'>) => void;
+  onAddProduct: (prod: Omit<OtherProductService, 'id'>) => void;
 }
 
-export default function OtrosParametrosView({ farmParams, onUpdateFarmParams }: OtrosParametrosProps) {
+export default function OtrosParametrosView({ farmParams, onUpdateFarmParams, onAddBreed, onAddCategory, onAddMedication, onAddProduct }: OtrosParametrosProps) {
   const [fName, setFName] = useState(farmParams.farmName);
   const [fClimate, setFClimate] = useState(farmParams.climateZone);
   const [fDollar, setFDollar] = useState(farmParams.dollarRateVes);
@@ -27,7 +32,42 @@ export default function OtrosParametrosView({ farmParams, onUpdateFarmParams }: 
   const [fSupabaseUrl, setFSupabaseUrl] = useState(farmParams.supabaseUrl || '');
   const [fSupabaseAnonKey, setFSupabaseAnonKey] = useState(farmParams.supabaseAnonKey || '');
   const [fSupabaseStatus, setFSupabaseStatus] = useState<'No Configurado' | 'Conectado' | 'Fallo de Conexión'>(farmParams.supabaseStatus || 'No Configurado');
-  const [isTestingSupabase, setIsTestingSupabase] = useState(false);
+  const [modalType, setModalType] = useState<null | 'breed' | 'category' | 'medicine' | 'product'>(null);
+  const [formData, setFormData] = useState<any>({});
+
+  const handleAddBreed = () => {
+    setModalType('breed');
+  };
+  
+  const handleAddCategory = () => {
+    setModalType('category');
+  };
+
+  const handleAddMedication = () => {
+    setModalType('medicine');
+  };
+
+  const handleAddProduct = () => {
+    setModalType('product');
+  };
+
+  const submitModal = () => {
+    if (modalType === 'breed' && formData.name && formData.species) {
+      if (!SupabaseDb.isEnabled()) alert('Advertencia: Supabase no está configurado.');
+      onAddBreed({ name: formData.name, species: formData.species });
+    } else if (modalType === 'category' && formData.name && formData.species) {
+      if (!SupabaseDb.isEnabled()) alert('Advertencia: Supabase no está configurado.');
+      onAddCategory({ name: formData.name, species: formData.species });
+    } else if (modalType === 'medicine' && formData.name && formData.ingredient && formData.withdrawal) {
+      if (!SupabaseDb.isEnabled()) alert('Advertencia: Supabase no está configurado.');
+      onAddMedication({ name: formData.name, activeIngredient: formData.ingredient, withdrawalPeriod: Number(formData.withdrawal), unit: 'ml', category: 'General' });
+    } else if (modalType === 'product' && formData.name && formData.type && formData.amount) {
+      if (!SupabaseDb.isEnabled()) alert('Advertencia: Supabase no está configurado.');
+      onAddProduct({ name: formData.name, type: formData.type, amount: Number(formData.amount) });
+    }
+    setModalType(null);
+    setFormData({});
+  };
 
   const handleTestSupabase = () => {
     if (!fSupabaseUrl || !fSupabaseAnonKey) {
@@ -225,6 +265,40 @@ export default function OtrosParametrosView({ farmParams, onUpdateFarmParams }: 
             </div>
           </div>
 
+          <hr className="border-slate-100" />
+          
+          {/* Management Breeds / Categories */}
+          <div className="space-y-4">
+             <h4 className="font-poppins font-bold text-slate-800 text-xs">Gestión de Catálogos</h4>
+             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                 <button type="button" onClick={handleAddBreed} className="p-2 border rounded-lg text-emerald-800 font-bold border-emerald-200 bg-emerald-50">+ Registrar Nueva Raza</button>
+                 <button type="button" onClick={handleAddCategory} className="p-2 border rounded-lg text-emerald-800 font-bold border-emerald-200 bg-emerald-50">+ Registrar Nueva Categoría</button>
+                 <button type="button" onClick={handleAddMedication} className="p-2 border rounded-lg text-emerald-800 font-bold border-emerald-200 bg-emerald-50">+ Registrar Nuevo Fármaco</button>
+                 <button type="button" onClick={handleAddProduct} className="p-2 border rounded-lg text-emerald-800 font-bold border-emerald-200 bg-emerald-50">+ Registrar Producto/Servicio</button>
+             </div>
+          </div>
+          
+          {modalType && (
+            <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+              <div className="bg-white p-6 rounded-xl space-y-4 w-full max-w-sm">
+                <h3 className="font-bold text-lg">Registrar {modalType}</h3>
+                {['name', 'species', 'ingredient', 'withdrawal', 'type', 'amount'].filter(field => {
+                  if (modalType === 'breed' && !['name', 'species'].includes(field)) return false;
+                  if (modalType === 'category' && !['name', 'species'].includes(field)) return false;
+                  if (modalType === 'medicine' && !['name', 'ingredient', 'withdrawal'].includes(field)) return false;
+                  if (modalType === 'product' && !['name', 'type', 'amount'].includes(field)) return false;
+                  return true;
+                }).map(field => (
+                  <input key={field} placeholder={field.toUpperCase()} className="w-full border p-2 rounded" onChange={e => setFormData({...formData, [field]: e.target.value})} />
+                ))}
+                <div className="flex gap-2">
+                  <button onClick={() => setModalType(null)} className="flex-1 p-2 bg-gray-200 rounded">Cancelar</button>
+                  <button onClick={submitModal} className="flex-1 p-2 bg-emerald-600 text-white rounded">Guardar</button>
+                </div>
+              </div>
+            </div>
+          )}
+          
           <hr className="border-slate-100" />
 
           {/* Supabase Connection Setup Section (Read-Only Secure Status) */}

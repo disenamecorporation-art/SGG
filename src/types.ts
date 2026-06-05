@@ -13,8 +13,11 @@ export interface Animal {
   birthDate: string;
   birthWeight: number; // kg
   currentWeight: number; // kg
+  weaningWeight?: number; // kg
+  weight12Months?: number; // kg
   status: 'Activo' | 'Vendido' | 'Muerto';
   pregnancyStatus?: 'Vacía' | 'Preñada' | 'Por confirmar';
+  reproductionStatus?: 'Donante' | 'Receptora' | 'Transferencia' | 'Descarte' | 'Normal';
   lactationStatus?: 'Seca' | 'En Lactancia';
   lot: string; // Lote (ej: Lote A, Ordeño 1, Escoteras, Ceba)
   pasture: string; // Potrero (ej: Potrero El Copey, La Laguna)
@@ -23,8 +26,32 @@ export interface Animal {
   motherTag?: string;
   asocebuNumber?: string; // Registro oficial
   geneticsScore?: string; // Evaluación lineal o % Pureza
-  weaningWeight205?: number; // Peso ajustado a destete (205 días)
-  weight540?: number; // Peso ajustado a 18 meses (540 días)
+  
+  // Pedigrí Completo
+  pedigree?: Pedigree;
+}
+
+export interface Pedigree {
+  // 1a Gen (Padres)
+  parents: { fatherId: string; motherId: string };
+  // 2a Gen (Abuelos)
+  grandParents: {
+    paternalGrandFather: string;
+    paternalGrandMother: string;
+    maternalGrandFather: string;
+    maternalGrandMother: string;
+  };
+  // 3a Gen (Bisabuelos)
+  greatGrandParents: {
+    paternalGreatGrandFather1: string;
+    paternalGreatGrandMother1: string;
+    paternalGreatGrandFather2: string;
+    paternalGreatGrandMother2: string;
+    maternalGreatGrandFather1: string;
+    maternalGreatGrandMother1: string;
+    maternalGreatGrandFather2: string;
+    maternalGreatGrandMother2: string;
+  };
 }
 
 export interface MilkLog {
@@ -62,13 +89,45 @@ export interface WeightRecord {
   adg: number; // Ganancia Diaria Promedio (Average Daily Gain) kg/día
 }
 
-export interface Medicine {
+export interface Medication {
   id: string;
   name: string;
   activeIngredient: string; // Principio Activo (ej: Ivermectina, Oxitetraciclina)
   stock: number; // Cantidad disponible
   unit: 'ml' | 'Dosis' | 'Frasco' | 'Kg';
   withdrawalPeriod: number; // Días de retiro (leche/carne)
+  category: string;
+  description?: string;
+}
+
+export interface Breed {
+  id: string;
+  name: string;
+  species: 'Bovino' | 'Bufalino' | 'Caprino' | 'Ovino';
+}
+
+export interface AnimalCategory {
+  id: string;
+  name: string;
+  species: 'Bovino' | 'Bufalino' | 'Caprino' | 'Ovino';
+}
+
+export interface OtherProductService {
+  id: string;
+  name: string;
+  type: 'Costo' | 'Venta';
+  amount: number;
+}
+
+export interface MedicalTask {
+  month: 'ENE' | 'FEB' | 'MAR' | 'ABR' | 'MAY' | 'JUN' | 'JUL' | 'AGO' | 'SEP' | 'OCT' | 'NOV' | 'DIC';
+  vaccineOrMedicationName: string;
+}
+
+export interface MedicalPlan {
+  id: string;
+  year: number;
+  tasks: MedicalTask[];
 }
 
 export interface TreatmentLog {
@@ -192,4 +251,14 @@ export interface Transaction {
   description: string;
   amountUsd: number;
   amountVes: number;
+}
+
+export interface Publication {
+  id: string;
+  animalId: string;
+  type: 'Venta' | 'Servicio' | 'Donación';
+  priceUsd: number;
+  contactNumber: string;
+  description: string;
+  active: boolean;
 }

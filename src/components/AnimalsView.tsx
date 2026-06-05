@@ -41,7 +41,9 @@ export default function AnimalsView({ animals, onAddAnimal, onUpdateAnimal, onDe
   const [formSex, setFormSex] = useState<'M' | 'F'>('F');
   const [formBirthDate, setFormBirthDate] = useState('2024-01-01');
   const [formBirthWeight, setFormBirthWeight] = useState(35);
-  const [formWeight, setFormWeight] = useState(400);
+  const [formWeight, setFormWeight] = useState(400); // Current
+  const [formWeaningWeight, setFormWeaningWeight] = useState(0);
+  const [formWeight12Months, setFormWeight12Months] = useState(0);
   const [formLot, setFormLot] = useState('Lote Ordeño A');
   const [formPasture, setFormPasture] = useState('Potrero El Copey');
   // Pedigree fields
@@ -49,6 +51,13 @@ export default function AnimalsView({ animals, onAddAnimal, onUpdateAnimal, onDe
   const [formMother, setFormMother] = useState('');
   const [formAsocebu, setFormAsocebu] = useState('');
   const [formGenClass, setFormGenClass] = useState('');
+  const [formPedigree, setFormPedigree] = useState({
+    grandParents: { paternalGrandFather: '', paternalGrandMother: '', maternalGrandFather: '', maternalGrandMother: '' },
+    greatGrandParents: { 
+      paternalGreatGrandFather1: '', paternalGreatGrandMother1: '', paternalGreatGrandFather2: '', paternalGreatGrandMother2: '', 
+      maternalGreatGrandFather1: '', maternalGreatGrandMother1: '', maternalGreatGrandFather2: '', maternalGreatGrandMother2: '' 
+    }
+  });
 
   // Search and filter logic
   const filteredAnimals = animals.filter(animal => {
@@ -72,6 +81,8 @@ export default function AnimalsView({ animals, onAddAnimal, onUpdateAnimal, onDe
       sex: formSex,
       birthDate: formBirthDate,
       birthWeight: Number(formBirthWeight),
+      weaningWeight: Number(formWeaningWeight) || undefined,
+      weight12Months: Number(formWeight12Months) || undefined,
       currentWeight: Number(formWeight),
       status: 'Activo',
       pregnancyStatus: formSex === 'F' && (formCategory === 'Vaca' || formCategory === 'Novilla' || formCategory === 'Búfala') ? 'Vacía' : undefined,
@@ -81,7 +92,12 @@ export default function AnimalsView({ animals, onAddAnimal, onUpdateAnimal, onDe
       fatherTag: formFather || undefined,
       motherTag: formMother || undefined,
       asocebuNumber: formAsocebu || undefined,
-      geneticsScore: formGenClass || undefined
+      geneticsScore: formGenClass || undefined,
+      pedigree: {
+        parents: { fatherId: formFather, motherId: formMother },
+        grandParents: formPedigree.grandParents,
+        greatGrandParents: formPedigree.greatGrandParents
+      }
     });
 
     // Reset fields
@@ -91,6 +107,13 @@ export default function AnimalsView({ animals, onAddAnimal, onUpdateAnimal, onDe
     setFormMother('');
     setFormAsocebu('');
     setFormGenClass('');
+    setFormPedigree({
+      grandParents: { paternalGrandFather: '', paternalGrandMother: '', maternalGrandFather: '', maternalGrandMother: '' },
+      greatGrandParents: { 
+        paternalGreatGrandFather1: '', paternalGreatGrandMother1: '', paternalGreatGrandFather2: '', paternalGreatGrandMother2: '', 
+        maternalGreatGrandFather1: '', maternalGreatGrandMother1: '', maternalGreatGrandFather2: '', maternalGreatGrandMother2: '' 
+      }
+    });
     setActiveTab('list');
   };
 
@@ -477,6 +500,28 @@ export default function AnimalsView({ animals, onAddAnimal, onUpdateAnimal, onDe
               />
             </div>
 
+            {/* Weaning Weight */}
+            <div className="space-y-1">
+              <label className="text-slate-600 block">Peso al Destete (Kg)</label>
+              <input
+                type="number"
+                value={formWeaningWeight}
+                onChange={(e) => setFormWeaningWeight(Number(e.target.value))}
+                className="w-full border border-slate-200 rounded-lg p-2 font-medium focus:ring-1 focus:ring-emerald-500 outline-none"
+              />
+            </div>
+
+            {/* 12 Months Weight */}
+            <div className="space-y-1">
+              <label className="text-slate-600 block">Peso a los 12 meses (Kg)</label>
+              <input
+                type="number"
+                value={formWeight12Months}
+                onChange={(e) => setFormWeight12Months(Number(e.target.value))}
+                className="w-full border border-slate-200 rounded-lg p-2 font-medium focus:ring-1 focus:ring-emerald-500 outline-none"
+              />
+            </div>
+
             {/* Lot Location */}
             <div className="space-y-1">
               <label className="text-slate-600 block">Lote Asignado</label>
@@ -558,6 +603,22 @@ export default function AnimalsView({ animals, onAddAnimal, onUpdateAnimal, onDe
                   className="w-full border border-slate-200 rounded-lg p-2 bg-white font-medium"
                 />
               </div>
+            </div>
+            
+            {/* Abuelos */}
+            <h5 className="text-xs font-bold text-slate-700 mt-4">Abuelos (2° Generación)</h5>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[10px]">
+              {Object.keys(formPedigree.grandParents).map(key => (
+                <input key={key} type="text" placeholder={key.replace(/([A-Z])/g, ' $1').trim()} value={formPedigree.grandParents[key as keyof typeof formPedigree.grandParents]} onChange={(e) => updateGrandParent(key as any, e.target.value)} className="w-full border border-slate-200 rounded-lg p-2 bg-white font-medium" />
+              ))}
+            </div>
+
+            {/* Bisabuelos */}
+            <h5 className="text-xs font-bold text-slate-700 mt-4">Bisabuelos (3° Generación)</h5>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[10px]">
+                {Object.keys(formPedigree.greatGrandParents).map(key => (
+                    <input key={key} type="text" placeholder={key.replace(/([A-Z])/g, ' $1').trim()} value={formPedigree.greatGrandParents[key as keyof typeof formPedigree.greatGrandParents]} onChange={(e) => updateGreatGrandParent(key as any, e.target.value)} className="w-full border border-slate-200 rounded-lg p-2 bg-white font-medium" />
+                ))}
             </div>
           </div>
 

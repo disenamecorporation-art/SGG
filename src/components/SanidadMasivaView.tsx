@@ -41,6 +41,20 @@ export default function SanidadMasivaView({
   const [mvGroupName, setMvGroupName] = useState('Rebaño Completo');
   const [mvBatch, setMvBatch] = useState('');
 
+  // --- ANNUAL MEDICAL PLAN STATE ---
+  const [medicalPlan, setMedicalPlan] = useState<{ [key: string]: string[] }>(() => {
+      const plan: { [key: string]: string[] } = {};
+      ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'].forEach(m => plan[m] = []);
+      return plan;
+  });
+  
+  const updateMedicalPlan = (month: string, vaccine: string) => {
+      setMedicalPlan(prev => ({
+          ...prev,
+          [month]: prev[month].includes(vaccine) ? prev[month].filter(v => v !== vaccine) : [...prev[month], vaccine]
+      }));
+  };
+
   // Extract unique Lots and Pastures for dropdown selection
   const lotsList = Array.from(new Set(animals.map(a => a.lot).filter(Boolean)));
   const pasturesList = Array.from(new Set(animals.map(a => a.pasture).filter(Boolean)));
@@ -131,7 +145,37 @@ export default function SanidadMasivaView({
           <Syringe className="w-4.5 h-4.5 text-rose-500" />
           Vacunas Obligatorias (INSAI Cobertura Nacional)
         </button>
+        <button
+          onClick={() => setActiveSubTab('plan_anual')}
+          className={`flex-1 py-2.5 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-2 ${
+            activeSubTab === 'plan_anual' ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          <Calendar className="w-4.5 h-4.5 text-indigo-500" />
+          Plan Sanitario Anual
+        </button>
       </div>
+
+      {activeSubTab === 'plan_anual' && (
+        <div className="bg-white p-6 rounded-xl border border-slate-200">
+            <h4 className="font-poppins font-bold text-slate-800 text-sm mb-4">Calendario Sanitario Anual</h4>
+            <div className="grid grid-cols-12 gap-2 text-center text-xs font-bold">
+                {['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'].map(m => (
+                    <div key={m} className="bg-slate-100 p-2 rounded">{m}</div>
+                ))}
+            </div>
+            <div className="mt-4 flex flex-col gap-2">
+                {['Aftosa', 'Rabia', 'Brucelosis', 'Triple Portal'].map(vac => (
+                    <div key={vac} className="grid grid-cols-12 gap-2">
+                        <div className="col-span-1 text-xs font-bold flex items-center">{vac}</div>
+                        {['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'].map(m => (
+                            <button key={m} onClick={() => updateMedicalPlan(m, vac)} className={`col-span-1 p-2 rounded border ${medicalPlan[m].includes(vac) ? 'bg-emerald-600' : 'bg-slate-50'}`}></button>
+                        ))}
+                    </div>
+                ))}
+            </div>
+        </div>
+      )}
 
       {activeSubTab === 'tratamientos' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

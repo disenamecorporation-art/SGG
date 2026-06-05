@@ -23,7 +23,7 @@ export default function Header({ currentSection, farmParams }: HeaderProps) {
       case 'mastitis': return 'Control Preventivo de Mastitis';
       case 'mercado': return 'Mercado Ganadero Nacional (Precios USD)';
       case 'finanzas': return 'Administración y Flujo de Caja';
-      case 'medicinas': return 'Fármacos Veteranos e Inventario';
+      case 'medicinas': return 'Fármacos Veterinarios e Inventario';
       case 'tareas': return 'Tareas Críticas y Calendario de Campo';
       case 'scanner': return 'Escáner Electrónico de Chips y QR';
       case 'tratamiento-masivo': return 'Tratamientos Masivos (Lotes & Potreros)';

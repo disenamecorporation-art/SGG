@@ -144,15 +144,36 @@ export default function ReproduccionView({
           Control de Palpación Rectal & Partos
         </button>
         <button
-          onClick={() => setTab('machos')}
+          onClick={() => setTab('estatus')}
           className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
-            tab === 'machos' ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-500 hover:text-slate-800'
+            tab === 'estatus' ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-500 hover:text-slate-800'
           }`}
         >
-          <Award className="w-4.5 h-4.5 text-blue-400" />
-          Desempeño de Toros / Reproductores
+          <Users className="w-4.5 h-4.5 text-orange-400" />
+          Estatus Especiales
         </button>
       </div>
+
+      {/* VIEW 4: SPECIAL REPRODUCTIVE STATUSES */}
+      {tab === 'estatus' && (
+        <div className="bg-white p-6 rounded-xl border border-slate-200">
+           <h4 className="font-bold text-sm mb-4">Actualizar Estatus Especial de Hembras</h4>
+           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 font-semibold text-xs">
+              {breedableCows.map(cow => (
+                  <div key={cow.id} className="p-3 border rounded-lg flex items-center justify-between">
+                      <span>#{cow.tag} {cow.name}</span>
+                      <select value={cow.reproductionStatus || 'Normal'} onChange={(e) => onUpdateAnimal(cow.id, { ...cow, reproductionStatus: e.target.value as any })} className="border p-1 rounded">
+                          <option value="Normal">Normal</option>
+                          <option value="Donante">Donante</option>
+                          <option value="Receptora">Receptora</option>
+                          <option value="Transferencia">Transferencia Embrión</option>
+                          <option value="Descarte">Descarte</option>
+                      </select>
+                  </div>
+              ))}
+           </div>
+        </div>
+      )}
 
       {/* VIEW 1: TEMPORAL SEASONS */}
       {tab === 'temporadas' && (

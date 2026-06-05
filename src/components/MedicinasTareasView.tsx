@@ -186,7 +186,7 @@ export default function MedicinasTareasView({
 
               <button
                 type="submit"
-                className="w-full bg-emerald-850 hover:bg-emerald-900 text-white font-bold py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 shadow-xs text-xs tracking-wide"
+                className="w-full bg-emerald-800 hover:bg-emerald-900 text-white font-bold py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 shadow-xs text-xs tracking-wide"
               >
                 <Sliders className="w-4 h-4" />
                 Registrar Tratamiento

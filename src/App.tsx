@@ -173,7 +173,11 @@ export default function App() {
           dbBreeds,
           dbBulls,
           dbBuffalo,
-          dbRuminants
+          dbRuminants,
+          dbBreedsCollection,
+          dbCategories,
+          dbMedications,
+          dbProducts
         ] = await Promise.all([
           SupabaseDb.fetchCollection('animals', []),
           SupabaseDb.fetchCollection('milk_logs', []),
@@ -188,7 +192,11 @@ export default function App() {
           SupabaseDb.fetchCollection('breeding_seasons', []),
           SupabaseDb.fetchCollection('bull_evaluations', []),
           SupabaseDb.fetchCollection('buffalo_production', []),
-          SupabaseDb.fetchCollection('small_ruminant_logs', [])
+          SupabaseDb.fetchCollection('small_ruminant_logs', []),
+          SupabaseDb.fetchCollection('breeds', []),
+          SupabaseDb.fetchCollection('animal_categories', []),
+          SupabaseDb.fetchCollection('medications', []),
+          SupabaseDb.fetchCollection('other_products', [])
         ]);
 
         if (dbAnimals && dbAnimals.length > 0) setAnimals(dbAnimals);
@@ -205,6 +213,10 @@ export default function App() {
         if (dbBulls && dbBulls.length > 0) setBullEvaluations(dbBulls);
         if (dbBuffalo && dbBuffalo.length > 0) setBuffaloProduction(dbBuffalo);
         if (dbRuminants && dbRuminants.length > 0) setSmallRuminantLogs(dbRuminants);
+        if (dbBreedsCollection && dbBreedsCollection.length > 0) setBreeds(dbBreedsCollection);
+        if (dbCategories && dbCategories.length > 0) setCategories(dbCategories);
+        if (dbMedications && dbMedications.length > 0) setMedications(dbMedications);
+        if (dbProducts && dbProducts.length > 0) setProducts(dbProducts);
 
       } catch (err) {
         console.warn('Sync notice: Standard memory states active.', err);
@@ -263,8 +275,49 @@ export default function App() {
   // Advanced modules: Criabúfalo, ASOCEBU & Ruminants
   const [buffaloProduction, setBuffaloProduction] = useState<BuffaloProduction[]>(() => Database.getBuffaloProduction());
   const [smallRuminantLogs, setSmallRuminantLogs] = useState<SmallRuminantLog[]>(() => Database.getSmallRuminantLogs());
+  const [publications, setPublications] = useState<Publication[]>([]);
+  
+  // Catalog Management
+  const [breeds, setBreeds] = useState<Breed[]>([]);
+  const [categories, setCategories] = useState<AnimalCategory[]>([]);
+  const [medications, setMedications] = useState<Medication[]>([]);
+  const [products, setProducts] = useState<OtherProductService[]>([]);
 
   // --- ACTIONS & MUTATORS SINK ---
+
+  const onAddPublication = (pub: Omit<Publication, 'id'>) => {
+    const newPub: Publication = { id: 'pub_' + Date.now(), ...pub };
+    setPublications([...publications, newPub]);
+  };
+
+  const onAddBreed = (breed: Omit<Breed, 'id'>) => {
+    const newRecord = { id: 'b_' + Date.now(), ...breed };
+    setBreeds([...breeds, newRecord]);
+    if (SupabaseDb.isEnabled()) {
+      SupabaseDb.upsertRecord('breeds', newRecord).catch(err => console.error(err));
+    }
+  };
+  const onAddCategory = (cat: Omit<AnimalCategory, 'id'>) => {
+    const newRecord = { id: 'c_' + Date.now(), ...cat };
+    setCategories([...categories, newRecord]);
+    if (SupabaseDb.isEnabled()) {
+      SupabaseDb.upsertRecord('animal_categories', newRecord).catch(err => console.error(err));
+    }
+  };
+  const onAddMedication = (med: Omit<Medication, 'id'>) => {
+    const newRecord = { id: 'm_' + Date.now(), ...med };
+    setMedications([...medications, newRecord]);
+    if (SupabaseDb.isEnabled()) {
+      SupabaseDb.upsertRecord('medications', newRecord).catch(err => console.error(err));
+    }
+  };
+  const onAddProduct = (prod: Omit<OtherProductService, 'id'>) => {
+    const newRecord = { id: 'p_' + Date.now(), ...prod };
+    setProducts([...products, newRecord]);
+    if (SupabaseDb.isEnabled()) {
+      SupabaseDb.upsertRecord('other_products', newRecord).catch(err => console.error(err));
+    }
+  };
 
   const onUpdateFarmParams = (params: FarmParams) => {
     setFarmParams(params);
@@ -688,7 +741,9 @@ export default function App() {
             subSection="mercado"
             transactions={transactions}
             farmParams={farmParams}
+            animals={animals}
             onAddTransaction={onAddTransaction}
+            onAddPublication={onAddPublication}
           />
         );
       case 'finanzas':
@@ -697,7 +752,9 @@ export default function App() {
             subSection="finanzas"
             transactions={transactions}
             farmParams={farmParams}
+            animals={animals}
             onAddTransaction={onAddTransaction}
+            onAddPublication={onAddPublication}
           />
         );
       case 'tratamiento-masivo':
@@ -809,6 +866,10 @@ export default function App() {
           <OtrosParametrosView
             farmParams={farmParams}
             onUpdateFarmParams={onUpdateFarmParams}
+            onAddBreed={onAddBreed}
+            onAddCategory={onAddCategory}
+            onAddMedication={onAddMedication}
+            onAddProduct={onAddProduct}
           />
         );
       case 'mi-perfil':

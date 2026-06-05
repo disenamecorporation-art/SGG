@@ -15,21 +15,65 @@ import {
   Layers,
   ArrowUpRight,
   ArrowDownRight,
-  Calculator
+  Calculator,
+  Tag
 } from 'lucide-react';
-import { Transaction, FarmParams } from '../types';
+import { Transaction, FarmParams, Animal, Publication, OtherProductService } from '../types';
 
 interface MercadoFinanzasProps {
   subSection: 'mercado' | 'finanzas';
   transactions: Transaction[];
   farmParams: FarmParams;
+  animals: Animal[];
   onAddTransaction: (tx: Omit<Transaction, 'id'>) => void;
+  onAddPublication: (pub: Omit<Publication, 'id'>) => void;
 }
 
-export default function MercadoFinanzasView({ subSection, transactions, farmParams, onAddTransaction }: MercadoFinanzasProps) {
-  // --- STATE FOR MERCADO CALCULATOR ---
+export default function MercadoFinanzasView({ subSection, transactions, farmParams, animals, onAddTransaction, onAddPublication }: MercadoFinanzasProps) {
+  // --- STATE FOR MERCADO ---
   const [calcWeight, setCalcWeight] = useState<number>(450);
   const [calcCategory, setCalcCategory] = useState<string>('novillo_ceba');
+  
+  // Publication State
+  const [selectedAnimalId, setSelectedAnimalId] = useState('');
+  const [pubType, setPubType] = useState<'Venta' | 'Servicio' | 'Donación'>('Venta');
+  const [pubPrice, setPubPrice] = useState<number>(500);
+  const [pubContact, setPubContact] = useState('');
+  const [pubDescription, setPubDescription] = useState('');
+
+  const handlePubSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedAnimalId) return alert('Por favor seleccione un animal.');
+    
+    onAddPublication({
+      animalId: selectedAnimalId,
+      type: pubType,
+      priceUsd: pubPrice,
+      contactNumber: pubContact,
+      description: pubDescription,
+      active: true
+    });
+    alert('Publicación creada con éxito.');
+    setSelectedAnimalId('');
+    setPubPrice(500);
+    setPubDescription('');
+  };
+  
+  // Product Management
+  const [productName, setProductName] = useState('');
+  const [productType, setProductType] = useState<'Costo' | 'Venta'>('Costo');
+  const [productAmount, setProductAmount] = useState<number>(0);
+  const [products, setProducts] = useState<OtherProductService[]>([]);
+
+  const handleProductSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!productName || productAmount <= 0) return alert('Por favor llene todos los campos.');
+    
+    setProducts([...products, { id: 'prod_' + Date.now(), name: productName, type: productType, amount: productAmount }]);
+    alert('Producto/Servicio registrado.');
+    setProductName('');
+    setProductAmount(0);
+  };
   
   // Simulated Venezuelan Live prices list (per Kg en pie o producto)
   const marketRates: { [key: string]: { label: string, priceUsd: number, unit: string, trend: 'up' | 'down' | 'equal' } } = {
@@ -130,8 +174,8 @@ export default function MercadoFinanzasView({ subSection, transactions, farmPara
               </div>
             </div>
 
-            {/* Right Quick Converter */}
-            <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs h-fit space-y-4">
+            {/* Right Quick Converter & Seller */}
+            <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs h-fit space-y-6">
               <h4 className="font-poppins font-bold text-slate-800 text-sm border-b border-slate-100 pb-3 flex items-center gap-1.5">
                 <Calculator className="w-4 h-4 text-slate-500" />
                 Calculadora Cambiaria Ganadera
@@ -173,12 +217,30 @@ export default function MercadoFinanzasView({ subSection, transactions, farmPara
                   <h3 className="text-3xl font-poppins font-bold text-emerald-900 tracking-tight leading-none">
                     ${getCalculatedPriceUsd().toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </h3>
-                  
-                  <p className="text-xs font-bold text-emerald-700">
-                    ~ {(getCalculatedPriceUsd() * farmParams.dollarRateVes).toLocaleString('es-VE', { maximumFractionDigits: 0 })} Bs.
-                  </p>
-                  <p className="text-[10px] text-slate-400 font-mono">Simulado con tasa oficial de cambio.</p>
                 </div>
+              </div>
+              
+              {/* Vender Animal Formulario */}
+              <div className="border-t border-slate-100 pt-5">
+                <h4 className="font-poppins font-bold text-slate-800 text-sm pb-3 flex items-center gap-1.5">
+                    <Tag className="w-4 h-4 text-emerald-600" />
+                    Vender Animal / Publicar
+                </h4>
+                <form onSubmit={handlePubSubmit} className="space-y-3 text-xs font-semibold">
+                    <select value={selectedAnimalId} onChange={(e) => setSelectedAnimalId(e.target.value)} className="w-full border border-slate-200 rounded-lg p-2">
+                        <option value="">Seleccionar Animal...</option>
+                        {animals.map(a => <option key={a.id} value={a.id}>{a.tag} ({a.breed})</option>)}
+                    </select>
+                    <select value={pubType} onChange={(e) => setPubType(e.target.value as any)} className="w-full border border-slate-200 rounded-lg p-2">
+                        <option value="Venta">Venta</option>
+                        <option value="Servicio">Servicio</option>
+                        <option value="Donación">Donación</option>
+                    </select>
+                    <input type="number" placeholder="Precio USD" value={pubPrice} onChange={(e) => setPubPrice(Number(e.target.value))} className="w-full border border-slate-200 rounded-lg p-2" />
+                    <input type="text" placeholder="Teléfono" value={pubContact} onChange={(e) => setPubContact(e.target.value)} className="w-full border border-slate-200 rounded-lg p-2" />
+                    <textarea placeholder="Descripción del animal..." value={pubDescription} onChange={(e) => setPubDescription(e.target.value)} className="w-full border border-slate-200 rounded-lg p-2 h-20" />
+                    <button type="submit" className="w-full bg-emerald-800 text-white font-bold py-2 rounded-lg">REGISTRAR PUBLICACIÓN</button>
+                </form>
               </div>
             </div>
           </div>
@@ -270,7 +332,7 @@ export default function MercadoFinanzasView({ subSection, transactions, farmPara
             </div>
 
             {/* Right: Quick Transaction Register Form */}
-            <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs h-fit space-y-4">
+            <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs h-fit space-y-6">
               <h4 className="font-poppins font-bold text-slate-800 text-sm border-b border-slate-100 pb-3 flex items-center gap-1.5">
                 <Plus className="w-4 h-4 text-emerald-600" />
                 Registrar Operación Contable
@@ -386,7 +448,25 @@ export default function MercadoFinanzasView({ subSection, transactions, farmPara
                   Cargar Transacción
                 </button>
               </form>
+              
+              {/* Productos / Servicios form */}
+              <div className="border-t border-slate-100 pt-5 mt-5">
+                <h4 className="font-poppins font-bold text-slate-800 text-sm pb-3 flex items-center gap-1.5">
+                    <Plus className="w-4 h-4 text-blue-600" />
+                    Registrar Otros Productos/Servicios
+                </h4>
+                <form onSubmit={handleProductSubmit} className="space-y-3 text-xs font-semibold">
+                    <input type="text" placeholder="Nombre" value={productName} onChange={(e) => setProductName(e.target.value)} className="w-full border border-slate-200 rounded-lg p-2" />
+                    <select value={productType} onChange={(e) => setProductType(e.target.value as any)} className="w-full border border-slate-200 rounded-lg p-2">
+                        <option value="Costo">Costo</option>
+                        <option value="Venta">Venta</option>
+                    </select>
+                    <input type="number" placeholder="Monto" value={productAmount} onChange={(e) => setProductAmount(Number(e.target.value))} className="w-full border border-slate-200 rounded-lg p-2" />
+                    <button type="submit" className="w-full bg-blue-800 text-white font-bold py-2 rounded-lg">REGISTRAR PRODUCTO/SERVICIO</button>
+                </form>
+              </div>
             </div>
+
           </div>
         </div>
       )}
