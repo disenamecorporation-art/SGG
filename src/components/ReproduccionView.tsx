@@ -14,6 +14,7 @@ interface ReproduccionViewProps {
   onAddBreedingSeason: (season: Omit<BreedingSeason, 'id'>) => void;
   onAddBullEvaluation: (evalu: Omit<BullEvaluation, 'id'>) => void;
   onUpdateAnimalPregnancy: (animalId: string, status: 'Vacía' | 'Preñada' | 'Por confirmar') => void;
+  onUpdateAnimal: (animal: Animal) => void;
 }
 
 export default function ReproduccionView({
@@ -22,7 +23,8 @@ export default function ReproduccionView({
   bullEvaluations,
   onAddBreedingSeason,
   onAddBullEvaluation,
-  onUpdateAnimalPregnancy
+  onUpdateAnimalPregnancy,
+  onUpdateAnimal
 }: ReproduccionViewProps) {
   const [tab, setTab] = useState<'temporadas' | 'machos' | 'palpacion'>('temporadas');
 
@@ -162,7 +164,7 @@ export default function ReproduccionView({
               {breedableCows.map(cow => (
                   <div key={cow.id} className="p-3 border rounded-lg flex items-center justify-between">
                       <span>#{cow.tag} {cow.name}</span>
-                      <select value={cow.reproductionStatus || 'Normal'} onChange={(e) => onUpdateAnimal(cow.id, { ...cow, reproductionStatus: e.target.value as any })} className="border p-1 rounded">
+                      <select value={cow.reproductionStatus || 'Normal'} onChange={(e) => onUpdateAnimal({ ...cow, reproductionStatus: e.target.value as any })} className="border p-1 rounded">
                           <option value="Normal">Normal</option>
                           <option value="Donante">Donante</option>
                           <option value="Receptora">Receptora</option>

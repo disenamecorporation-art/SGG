@@ -17,6 +17,7 @@ import {
   Calendar
 } from 'lucide-react';
 import { Animal, MilkLog, Task, Transaction, FarmParams, Medicine } from '../types';
+import SuggestionBoxView from './SuggestionBoxView';
 
 interface DashboardViewProps {
   animals: Animal[];
@@ -327,6 +328,8 @@ export default function DashboardView({
           ))}
         </div>
       </div>
+
+      <SuggestionBoxView />
     </div>
   );
 }

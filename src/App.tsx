@@ -803,6 +803,7 @@ export default function App() {
             onAddBreedingSeason={onAddBreedingSeason}
             onAddBullEvaluation={onAddBullEvaluation}
             onUpdateAnimalPregnancy={onUpdateAnimalPregnancy}
+            onUpdateAnimal={onUpdateAnimal}
           />
         );
       case 'info-machos':
@@ -814,6 +815,7 @@ export default function App() {
             onAddBreedingSeason={onAddBreedingSeason}
             onAddBullEvaluation={onAddBullEvaluation}
             onUpdateAnimalPregnancy={onUpdateAnimalPregnancy}
+            onUpdateAnimal={onUpdateAnimal}
           />
         );
       case 'criabufalo':
@@ -1003,7 +1005,7 @@ export default function App() {
                   }`}
                 >
                   <Lock className={`w-4 h-4 text-emerald-200 ${isLoggingIn ? 'animate-pulse' : ''}`} />
-                  {isLoggingIn ? 'Iniciando sesión en Supabase...' : 'Iniciar Ordeño Digital'}
+                  {isLoggingIn ? 'Iniciando Sesión...' : 'Iniciar Ordeño Digital'}
                 </button>
               </form>
             ) : (

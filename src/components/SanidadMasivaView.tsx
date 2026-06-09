@@ -6,6 +6,7 @@
 import React, { useState } from 'react';
 import { ShieldCheck, Plus, Sparkles, Syringe, Trash2, Calendar, FileText, CheckCircle } from 'lucide-react';
 import { MassTreatment, MassVaccination, Medicine, Animal } from '../types';
+import { supabase } from '../supabaseClient';
 
 interface SanidadMasivaProps {
   animals: Animal[];
@@ -42,18 +43,35 @@ export default function SanidadMasivaView({
   const [mvBatch, setMvBatch] = useState('');
 
   // --- ANNUAL MEDICAL PLAN STATE ---
-  const [medicalPlan, setMedicalPlan] = useState<{ [key: string]: string[] }>(() => {
-      const plan: { [key: string]: string[] } = {};
-      ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'].forEach(m => plan[m] = []);
+  const [medicalPlan, setMedicalPlan] = useState<{ [month: string]: string }>(() => {
+      const plan: { [month: string]: string } = {};
+      ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'].forEach(m => plan[m] = '');
       return plan;
   });
-  
-  const updateMedicalPlan = (month: string, vaccine: string) => {
+
+  const handleMedicalPlanChange = (month: string, text: string) => {
       setMedicalPlan(prev => ({
           ...prev,
-          [month]: prev[month].includes(vaccine) ? prev[month].filter(v => v !== vaccine) : [...prev[month], vaccine]
+          [month]: text
       }));
   };
+
+  const handleSaveMedicalPlan = async () => {
+      try {
+        for (const [month, text] of Object.entries(medicalPlan)) {
+            const { error } = await supabase
+                .from('annual_sanitary_plans')
+                .upsert({ month, plan_text: text }, { onConflict: 'month' });
+            
+            if (error) throw error;
+        }
+        alert('Cambios guardados con éxito en la base de datos.');
+      } catch (error) {
+          console.error('Detailed Supabase Error:', error);
+          alert(`Error al guardar cambios en la base de datos: ${error instanceof Error ? error.message : 'Error desconocido'}`);
+      }
+  };
+
 
   // Extract unique Lots and Pastures for dropdown selection
   const lotsList = Array.from(new Set(animals.map(a => a.lot).filter(Boolean)));
@@ -158,24 +176,30 @@ export default function SanidadMasivaView({
 
       {activeSubTab === 'plan_anual' && (
         <div className="bg-white p-6 rounded-xl border border-slate-200">
-            <h4 className="font-poppins font-bold text-slate-800 text-sm mb-4">Calendario Sanitario Anual</h4>
-            <div className="grid grid-cols-12 gap-2 text-center text-xs font-bold">
+            <h4 className="font-poppins font-bold text-slate-800 text-sm mb-6">Calendario Sanitario Anual - Planificación de Tratamientos</h4>
+            <div className="space-y-4">
                 {['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'].map(m => (
-                    <div key={m} className="bg-slate-100 p-2 rounded">{m}</div>
-                ))}
-            </div>
-            <div className="mt-4 flex flex-col gap-2">
-                {['Aftosa', 'Rabia', 'Brucelosis', 'Triple Portal'].map(vac => (
-                    <div key={vac} className="grid grid-cols-12 gap-2">
-                        <div className="col-span-1 text-xs font-bold flex items-center">{vac}</div>
-                        {['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'].map(m => (
-                            <button key={m} onClick={() => updateMedicalPlan(m, vac)} className={`col-span-1 p-2 rounded border ${medicalPlan[m].includes(vac) ? 'bg-emerald-600' : 'bg-slate-50'}`}></button>
-                        ))}
+                    <div key={m} className="grid grid-cols-[100px_1fr] gap-4 items-center">
+                        <div className="bg-slate-100 p-4 rounded-lg border border-slate-200 text-center font-bold text-slate-700">{m}</div>
+                        <textarea
+                            value={medicalPlan[m]}
+                            onChange={(e) => handleMedicalPlanChange(m, e.target.value)}
+                            className="p-4 rounded-lg border-2 border-slate-300 text-sm w-full bg-white h-24"
+                            placeholder={`Escriba el plan sanitario/tratamientos para ${m}...`}
+                        />
                     </div>
                 ))}
+                
+                <button 
+                  onClick={handleSaveMedicalPlan}
+                  className="w-full bg-emerald-700 text-white font-bold py-3 rounded-lg hover:bg-emerald-800 transition-all shadow-sm"
+                >
+                  ¿Guardar cambios?
+                </button>
             </div>
         </div>
       )}
+
 
       {activeSubTab === 'tratamientos' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
